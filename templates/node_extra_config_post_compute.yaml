@@ -1,2 +1,0 @@
-resource_registry:
-  OS::TripleO::Tasks::ComputePostConfig: /home/stack/templates/NodeExtraConfigPost-Compute.yaml
