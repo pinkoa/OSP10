@@ -1,0 +1,19 @@
+heat_template_version: 2014-10-16
+description: 'Extra Post-Deployment Config, All Nodes Only'
+parameters:
+  servers:
+    type: json
+
+# Note depends_on may be used for serialization if ordering is important
+resources:
+  OpenSCAPConfig:
+    type: /home/stack/templates/extraconfig/post_deploy/apply-allnodes-openscap.yaml
+    properties:
+        servers: {get_param: servers}
+
+outputs:
+  deploy_stdout:
+    value:
+      list_join:
+      - ''
+      - - {get_attr: [OpenSCAPConfig, deploy_stdout]}

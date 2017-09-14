@@ -1,0 +1,19 @@
+heat_template_version: 2014-10-16
+description: 'Extra Pre-Deployment Config, multiple'
+parameters:
+  server:
+    type: string
+
+resources:
+
+  CinderDellSCConfig:
+    type: /usr/share/openstack-tripleo-heat-templates/puppet/extraconfig/pre_deploy/controller/cinder-dellsc.yaml
+    properties:
+        server: {get_param: server}
+
+outputs:
+  deploy_stdout:
+    value:
+      list_join:
+      - ''
+      - - {get_attr: [CinderDellSCConfig, deploy_stdout]}

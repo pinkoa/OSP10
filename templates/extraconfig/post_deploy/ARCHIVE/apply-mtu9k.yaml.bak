@@ -1,0 +1,44 @@
+heat_template_version: 2014-10-16
+
+description: >
+  Apply openscap settings to overcloud systems
+
+parameters:
+  servers:
+    type: json
+
+resources:
+#  userdata:
+#    type: OS::Heat::MultipartMime
+#    properties:
+#      parts:
+#      - config: {get_resource: apply_scap}
+#resources:
+
+  ExtraConfig:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: script
+      config: {get_file: /home/stack/templates/extraconfig/post_deploy/post_deploy-mtu9k.sh}
+
+  ExtraDeployments:
+    type: OS::Heat::StructuredDeployments
+    properties:
+      servers:  {get_param: servers}
+      config: {get_resource: ExtraConfig}
+      actions: ['CREATE'] # Only do this on CREATE
+
+#  userdata:
+#    type: OS::Heat::MultipartMime
+#    properties:
+      # parts:
+      # - config: {get_resource: apply_openscap}
+
+#apply_openscap:
+#  type: OS::Heat::SoftwareConfig
+#  properties:
+
+#outputs:
+#  OS::stack_id:
+#    value: {get_resource: userdata}
+

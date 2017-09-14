@@ -1,0 +1,89 @@
+#!/bin/bash
+#
+# description:
+    # run commands on all controller nodes using heat post deployment to backport dell cinder driver patches
+#
+# post_deploy script
+#
+# Verizon
+# Jay Cromer
+#
+# Borrowed from:
+#
+# Redhat
+# Jason Woods   jwoods@redhat.com
+# 2016-05-17
+
+# backup config file before making changes to it
+function backup_file() {
+  bkup_orig="${1}.$(date +"%F_%T.%N")"
+  if [ -n "${1}" ] ; then
+    # if arg1 sent to function, use that as file to backup
+    bkup_file="${1}"
+  else
+    # if arg1 is null default to using FILE variable
+    bkup_file="${FILE}"
+  fi
+  if [ -e "${bkup_file}" ] ; then
+    cp -fva "${bkup_file}" "${bkup_orig}"
+  else
+    touch "${bkup_file}" "${bkup_orig}"
+  fi
+}
+
+# post_heat_dell_patches_cinder_conf
+function post_heat_dell_patches_cinder_conf() {
+  LOG="/root/post_heat_dell_patches_cinder_conf.log"
+  {
+
+    # run commands on all controller nodes using heat post deployment to backport dell cinder driver patches
+    FILE_CHK="/etc/neutron/dnsmasq-neutron.conf"
+    if [ -e "${FILE_CHK}" ] ; then
+    FILE="/etc/cinder/cinder.conf"
+    backup_file "${FILE}"
+      #crudini --set "${FILE}" tripleo_dellsc excluded_domain_ip 172.20.25.15
+      #crudini --set "${FILE}" tripleo_dellsc excluded_domain_ip 172.20.33.15
+#These setting fixes bug related to discovery when multiple fault domains are configured (https://bugs.launchpad.net/cinder/+bug/1616499) and is supposed to be fixed in Openstack Newton release.
+      grep -qs "excluded_domain_ip=172.20.25.15" "${FILE}"
+      if [[ $? != 0 ]]; then
+	echo "excluded_domain_ip=172.20.25.15" >> "${FILE}";
+      fi
+      grep -qs "excluded_domain_ip=172.20.33.15" "${FILE}"
+      if [[ $? != 0 ]]; then
+	echo "excluded_domain_ip=172.20.33.15" >> "${FILE}";
+      fi
+      crudini --set "${FILE}" tripleo_dellsc secondary_san_ip 10.75.15.125
+      crudini --set "${FILE}" tripleo_dellsc secondary_san_password Dellsvcs1
+      crudini --set "${FILE}" tripleo_dellsc secondary_san_login Admin
+      crudini --set "${FILE}" tripleo_dellsc secondary_sc_api_port 3033
+    else
+      echo "## Found not file: \"${FILE_CHK}\""
+      echo "## System appears to be a compute"
+    fi
+  } >> "${LOG}"
+}
+
+function post_heat_dell_patches_copy_cinder_driver() {
+  LOG="/root/post_heat_dell_patches_copy_cinder_driver.log"
+  {
+
+    # run commands on all controller nodes using heat post deployment to backport dell cinder driver patches
+    FILE_CHK="/etc/neutron/dnsmasq-neutron.conf"
+    if [ -e "${FILE_CHK}" ] ; then
+    FILE1="/usr/lib/python2.7/site-packages/cinder/volume/drivers/dell/dell_storagecenter_api.py"
+    FILE2="/usr/lib/python2.7/site-packages/cinder/volume/drivers/dell/dell_storagecenter_common.py"
+    backup_file "${FILE1}"
+    backup_file "${FILE2}"
+      ##FIXME Need to find a different way to do this, scp won't accept user:password
+      scp stack@172.20.4.20:/home/stack/dell_storagecenter_api.py_golden ${FILE1}
+      scp stack@172.20.4.20:/home/stack/dell_storagecenter_common.py_golden ${FILE2}
+    else
+      echo "## Found not file: \"${FILE_CHK}\""
+      echo "## System appears to be a compute"
+    fi
+  } >> "${LOG}"
+}
+# functions to execute below
+# comment out as needed
+post_heat_dell_patches_cinder_conf
+#post_heat_dell_patches_copy_cinder_driver

@@ -1,0 +1,46 @@
+heat_template_version: 2014-10-16  
+  
+description: >  
+  Execute Active Directory specific customization - Controllers
+  
+parameters:  
+  servers:  
+    type: json  
+  ad_domain:  
+    default: 'USWIN'  
+    description: 'NetBIOS Domain Name for Active Directory'  
+    type: string  
+  ad_enable:  
+    default: 'TRUE'  
+    description: 'Feature Flag to enable or disable AD Integration'  
+    type: string  
+  input_values:
+    type: json
+
+  
+resources:  
+  #############################################  
+  # Defines the Software Configuration Object #  
+  #############################################  
+  ADConfig:  
+    type: OS::Heat::SoftwareConfig  
+    properties:  
+      group: script  
+      config:   
+        str_replace:  
+          template: {get_file: /home/stack/templates/extraconfig/post_deploy/post_deploy_controller-activedirectory.sh}  
+          params:  
+            __DOMAIN__: {get_param: ad_domain}  
+            __ENABLE__: {get_param: ad_enable}  
+  
+  ########################################################  
+  # Defines the deployment of the Software Configuration #  
+  ########################################################  
+  ADDeployments:  
+    type: OS::Heat::SoftwareDeployments  
+    properties:  
+      servers: {get_param: [servers]}
+      config: {get_resource: ADConfig}  
+      actions: ['CREATE','UPDATE']  
+      input_values: {get_param: input_values}
+

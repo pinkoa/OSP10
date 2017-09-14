@@ -1,0 +1,31 @@
+heat_template_version: 2014-10-16
+
+description: >
+  Apply openscap settings to overcloud systems
+
+parameters:
+  servers:
+    type: json
+
+resources:
+  OpenScapConfig:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: script
+      config: {get_file: /home/stack/templates/extraconfig/post_deploy/post_deploy_allnodes-openscap.sh}
+
+  OpenScapDeploymentController:
+    type: OS::Heat::SoftwareDeployments
+    properties:
+      name: OpenScapDeploymentController
+      servers:  {get_param: servers,Controller}
+      config: {get_resource: OpenScapConfig}
+      actions: ['CREATE'] # Only do this on CREATE
+
+  OpenScapDeploymentCompute:
+    type: OS::Heat::SoftwareDeployments
+    properties:
+      name: OpenScapDeploymentCompute
+      servers:  {get_param: servers,Compute}
+      config: {get_resource: OpenScapConfig}
+      actions: ['CREATE'] # Only do this on CREATE

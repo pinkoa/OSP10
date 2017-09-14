@@ -1,0 +1,79 @@
+resource_registry:
+  OS::TripleO::BlockStorage::Net::SoftwareConfig: /home/stack/templates/nic-configs/cinder-storage.yaml
+  OS::TripleO::Compute::Net::SoftwareConfig: /home/stack/templates/nic-configs/compute.yaml
+  OS::TripleO::Controller::Net::SoftwareConfig: /home/stack/templates/nic-configs/controller.yaml
+  OS::TripleO::ObjectStorage::Net::SoftwareConfig: /home/stack/templates/nic-configs/swift-storage.yaml
+  OS::TripleO::CephStorage::Net::SoftwareConfig: /home/stack/templates/nic-configs/ceph-storage.yaml
+
+
+parameter_defaults:
+  InternalApiNetCidr: 172.20.3.0/24
+  TenantNetCidr: 172.20.5.0/24
+  StorageNetCidr: 172.20.8.0/21
+  StorageMgmtNetCidr: 172.20.16.0/21
+  ManagementNetCidr: 10.75.13.0/25
+  ExternalNetCidr: 10.75.13.128/25
+  ControlPlaneSubnetCidr: "24"
+  InternalApiAllocationPools: [{'start': '172.20.3.20', 'end': '172.20.3.200'}]
+  TenantAllocationPools: [{'start': '172.20.5.20', 'end': '172.20.5.200'}]
+  StorageAllocationPools: [{'start': '172.20.15.20', 'end': '172.20.15.200'}]
+  StorageMgmtAllocationPools: [{'start': '172.20.23.20', 'end': '172.20.23.200'}]
+  ManagementAllocationPools: [{'start': '10.75.13.20', 'end': '10.75.13.126'}]
+  # Leave room for floating IPs in the External allocation pool
+  ExternalAllocationPools: [{'start': '10.75.13.138', 'end': '10.75.13.254'}]
+  # Set to the router gateway on the external network
+  ExternalInterfaceDefaultRoute: 10.75.13.129
+  # Gateway router for the provisioning network (or Undercloud IP)
+  ControlPlaneDefaultRoute: 172.20.4.20
+  # Set to the Gateway for the management network
+  ManagementInterfaceDefaultRoute: 10.75.13.1
+  # The IP address of the EC2 metadata server. Generally the IP of the Undercloud
+  EC2MetadataIp: 172.20.4.20
+  # Define the DNS servers (maximum 2) for the overcloud nodes
+  DnsServers: ["96.239.250.57","96.239.250.58"]
+  InternalApiNetworkVlanID: 52
+  StorageNetworkVlanID: 71
+  StorageMgmtNetworkVlanID: 81
+  TenantNetworkVlanID: 912
+  ManagementNetworkVlanID: '32'
+  ExternalNetworkVlanID: 42
+  # Set to "br-ex" if using floating IPs on native VLAN on bridge br-ex
+  NeutronExternalNetworkBridge: "''"
+  # Customize bonding options if required
+  BondInterfaceOvsOptions:
+    "mode=4 lacp_rate=1 updelay=1000 miimon=50"
+  #NetworkDeploymentActions: ['CREATE','UPDATE']
+  PublicVirtualFixedIPs: [{'ip_address':'10.75.13.138'}]
+  RabbitFDLimit: 65536
+
+
+# Use this format is you want to map specific hosts to specific names
+#  HostnameMap:
+#    overcloud-controller-0: tpacloud-ctrl0
+#    overcloud-controller-1: tpacloud-ctrl1
+#    overcloud-controller-2: tpacloud-ctrl2
+#    overcloud-compute-0: tpacloud-comp0
+#    overcloud-compute-1: tpacloud-comp1
+#
+#Use Section below to set hostname format, but not map to specific hosts as shown above
+
+  ControllerHostnameFormat: 'tpavcpcloud-ctrl%index%'
+  ComputeHostnameFormat: 'tpavpcloud-comp%index%'
+
+
+
+  #Make your own name
+  CloudName: vcptpacloud.vici.verizon.com
+  
+  # Tenant Jumbo Frames  
+  NeutronTenantMtu: 9188
+  controllerExtraConfig:
+    neutron::plugins::ml2::path_mtu: 9188
+    # add this in OSP 9
+    #neutron::global_physnet_mtu: 9216
+    #Set as 9200 until northbound mtu is higher
+    neutron::global_physnet_mtu: 9200
+
+  #Adding this section for testing
+  UpdateIdentifier: "yes"
+

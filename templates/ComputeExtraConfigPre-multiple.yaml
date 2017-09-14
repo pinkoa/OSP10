@@ -1,0 +1,18 @@
+heat_template_version: 2014-10-16
+description: 'Extra Pre-Deployment Config, multiple'
+parameters:
+  server:
+    type: string
+
+resources:
+  ComputeSriovPreConfig:
+    type: /home/stack/templates/extraconfig/pre_deploy/compute/apply-sriov-compute-pre.yaml
+    properties:
+        server: {get_param: server}
+
+outputs:
+  deploy_stdout:
+    value:
+      list_join:
+      - ''
+      - - {get_attr: [ComputeSriovPreConfig, deploy_stdout]}

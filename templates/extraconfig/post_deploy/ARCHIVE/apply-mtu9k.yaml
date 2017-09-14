@@ -1,0 +1,24 @@
+heat_template_version: 2014-10-16
+
+description: >
+  Apply mtu9k settings to overcloud systems
+
+parameters:
+  server:
+    type: json
+
+resources:
+
+  MTU9kConfig:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: script
+      config: {get_file: /home/stack/templates/extraconfig/post_deploy/post_deploy-mtu9k.sh}
+
+  MTU9kDeployment:
+    type: OS::Heat::SoftwareDeployments
+    properties:
+      server:  {get_param: server}
+      config: {get_resource: MTU9kConfig}
+      actions: ['CREATE'] # Only do this on CREATE
+

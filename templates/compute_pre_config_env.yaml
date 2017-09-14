@@ -1,0 +1,2 @@
+resource_registry:
+  OS::TripleO::ComputeExtraConfigPre: /home/stack/templates/ComputeExtraConfigPre-multiple.yaml

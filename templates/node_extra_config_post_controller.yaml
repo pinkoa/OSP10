@@ -1,0 +1,2 @@
+resource_registry:
+    OS::TripleO::Tasks::ControllerPostConfig: /home/stack/templates/NodeExtraConfigPost-Controller.yaml
